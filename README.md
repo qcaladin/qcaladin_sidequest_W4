@@ -25,6 +25,6 @@ N/A
 
 ## GenAI
 
-The code was written by Dr. Karen Cochrane and David Han but they used GenAI to write the comments. edited by Queene Calading with help from GenAI
+The original example code was written by Dr. Karen Cochrane and David Han but they used GenAI to write the comments. edited by Queene Calading with help from GenAI
 
 ---
