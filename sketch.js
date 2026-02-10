@@ -20,6 +20,7 @@ let levelIndex = 0;
 
 let world; // WorldLevel instance (current level)
 let player; // BlobPlayer instance
+let gameState = "play";
 
 function preload() {
   // Load the level data from disk before setup runs.
@@ -40,6 +41,11 @@ function setup() {
 }
 
 function draw() {
+  if (gameState !== "play") {
+    drawEndScreen();
+    return;
+  }
+  
   // 1) Draw the world (background + platforms)
   world.drawWorld();
 
@@ -47,10 +53,46 @@ function draw() {
   player.update(world.platforms);
   player.draw(world.theme.blob);
 
+
+  if (world.goalBall) {
+    const g = world.goalBall;
+    
+    if (circlesTouch(player.x, player.y, player.r, g.x, g.y, g.r)) {
+      if (levelIndex === 2) {
+        gameState = "win";   // Level 3 → WIN
+        return;
+      } else {
+        loadLevel(levelIndex + 1); // Levels 1–2 → next level
+        return;
+      }
+    }
+  }
+
+  if (gameState === "play" && levelIndex === 2) {
+  for (const p of world.platforms) {
+    if (p.isDeath) {
+      // Check blob vs platform AABB
+      const blobBox = {
+        x: player.x - player.r,
+        y: player.y - player.r,
+        w: player.r * 2,
+        h: player.r * 2
+      };
+
+      if (touchAABB(blobBox, p)) {
+        gameState = "lose";
+        return;
+      }
+    }
+  }
+}
+
   // 3) HUD
   fill(0);
-  text(world.name, 10, 18);
-  text("Move: A/D or ←/→ • Jump: Space/W/↑ • Next: N", 10, 36);
+  textSize(14);
+  textAlign(LEFT, BASELINE);
+  text(world.name, 20, 18);
+  text("Move: A/D or ←/→ • Jump: Space/W/↑", 20, 36);
 }
 
 function keyPressed() {
@@ -59,11 +101,13 @@ function keyPressed() {
     player.jump();
   }
 
-  // Optional: cycle levels with N (as with the earlier examples)
-  if (key === "n" || key === "N") {
-    const next = (levelIndex + 1) % data.levels.length;
-    loadLevel(next);
+if (key === "r" || key === "R") {
+  if (gameState === "win") {
+    loadLevel(0);   // win -> restart to Level 1
+  } else if (gameState === "lose") {
+    loadLevel(2);   // lose -> retry Level 3
   }
+ }
 }
 
 /*
@@ -85,4 +129,43 @@ function loadLevel(i) {
 
   // Apply level settings + respawn.
   player.spawnFromLevel(world);
+
+  gameState = "play";
+}
+
+function circlesTouch(ax, ay, ar, bx, by, br) {
+  const dx = ax - bx;
+  const dy = ay - by;
+  const rSum = ar + br;
+  return dx * dx + dy * dy <= rSum * rSum;
+}
+
+function drawEndScreen() {
+
+  if (gameState === "win") {
+    background("#f79cf6");
+    fill(255);
+    textSize(48);
+    textAlign(CENTER, CENTER);
+    text("YOU WIN!", width / 2, height / 2 - 30);
+    textSize(18);
+    text("Press R to restart", width / 2, height / 2 + 30);
+  } else {
+    background(0);
+    fill(255);
+    textSize(48);
+    textAlign(CENTER, CENTER);
+    text("YOU LOSE!", width / 2, height / 2 - 30);
+    textSize(18);
+    text("Press R to retry level", width / 2, height / 2 + 30);
+  }
+ }
+
+ function touchAABB(a, b) {
+  return (
+    a.x <= b.x + b.w &&
+    a.x + a.w >= b.x &&
+    a.y <= b.y + b.h &&
+    a.y + a.h >= b.y
+  );
 }

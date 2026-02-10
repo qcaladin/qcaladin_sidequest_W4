@@ -1,12 +1,12 @@
 ## Project Title
 
-GBDA302 Week 4 Example 5: Blob Platformer (JSON + Classes)
+GBDA302 Week 4: Blob Platformer (JSON + Classes)
 
 ---
 
 ## Authors
 
-Karen Cochrane and David Han
+Queene Calading | qcaladin | 21094601
 
 ---
 
